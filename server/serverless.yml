@@ -1,0 +1,25 @@
+service: bedrock-api  # Nome do serviço
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: us-west-2  # Ajuste para a região de sua preferência
+  profile: hktaws
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - bedrock:InvokeModel  # Exemplo de ação necessária para o AWS Bedrock
+      Resource: "*"
+  environment:
+    MY_BEDROCK_MODEL_ID: xx
+
+functions:
+  app:
+    handler: handler.handler
+    events:
+      - http:
+          path: get-prompt-result
+          method: post
+
+plugins:
+  - serverless-dotenv-plugin

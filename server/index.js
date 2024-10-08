@@ -1,49 +1,47 @@
 const express = require('express');
-const {Configuration, OpenAIApi} = require("openai");
+const AWS = require('aws-sdk');
 const app = express();
 const cors = require('cors');
 require("dotenv").config();
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
+
+// Configurando o Bedrock
+const bedrock = new AWS.Bedrock({
+    region: process.env.AWS_REGION, // Região onde está sua base Bedrock
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID, // Chaves de acesso AWS
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
-const openai = new OpenAIApi(configuration);
 
 app.use(cors());
 app.use(express.json());
 app.use('/', express.static(__dirname + '/frontend')); // Serves resources from client folder
 
 app.post('/get-prompt-result', async (req, res) => {
-    // Get the prompt from the request body
-    const {prompt, model = 'gpt'} = req.body;
+    const { prompt, model = 'gpt' } = req.body;
 
-    // Check if prompt is present in the request
     if (!prompt) {
-        // Send a 400 status code and a message indicating that the prompt is missing
-        return res.status(400).send({error: 'Prompt is missing in the request'});
+        return res.status(400).send({ error: 'Prompt is missing in the request' });
     }
 
     try {
-        // Use the OpenAI SDK to create a completion
-        // with the given prompt, model and maximum tokens
         if (model === 'image') {
-            const result = await openai.createImage({
-                prompt,
-                response_format: 'url',
-                size: '512x512'
-            });
-            return res.send(result.data.data[0].url);
+            // Aqui, para o Bedrock, você pode substituir pela chamada a um modelo que gere imagens, se existir no Bedrock
+            return res.status(400).send({ error: 'Image generation not supported with AWS Bedrock yet' });
         }
-        const completion = await openai.createCompletion({
-            model: model === 'gpt' ? "text-davinci-003" : 'code-davinci-002', // model name
-            prompt: `Please reply below question in markdown format.\n ${prompt}`, // input prompt
-            max_tokens: model === 'gpt' ? 4000 : 8000 // Use max 8000 tokens for codex model
-        });
-        // Send the generated text as the response
-        return res.send(completion.data.choices[0].text);
+
+        // Configurar a solicitação ao Bedrock
+        const params = {
+            ModelId: process.env.BEDROCK_MODEL_ID, // ID do modelo Bedrock
+            InputText: prompt, // O prompt recebido do frontend
+        };
+
+        // Chamada ao AWS Bedrock
+        const response = await bedrock.invokeModel(params).promise();
+
+        // Bedrock retorna o resultado, então você pode pegar o texto gerado e enviar para o frontend
+        return res.send(response.OutputText);
     } catch (error) {
         const errorMsg = error.response ? error.response.data.error : `${error}`;
         console.error(errorMsg);
-        // Send a 500 status code and the error message as the response
         return res.status(500).send(errorMsg);
     }
 });

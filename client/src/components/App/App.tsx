@@ -4,15 +4,16 @@ import PromptInput from "../PromptInput/PromptInput";
 import './App.css';
 import {ResponseInterface} from "../PromptResponseList/response-interface";
 import PromptResponseList from "../PromptResponseList/PromptResponseList";
+import { isVisible } from '@testing-library/user-event/dist/utils';
 
-type ModelValueType = 'gpt' | 'codex' | 'image';
+type ModelValueType = 'Cloude 3 Sonnet';
 const App = () => {
 
   const [responseList, setResponseList] = useState<ResponseInterface[]>([]);
   const [prompt, setPrompt] = useState<string>('');
   const [promptToRetry, setPromptToRetry] = useState<string | null>(null);
   const [uniqueIdToRetry, setUniqueIdToRetry] = useState<string | null>(null);
-  const [modelValue, setModelValue] = useState<ModelValueType>('gpt');
+  const [modelValue, setModelValue] = useState<ModelValueType>('Cloude 3 Sonnet');
   const [isLoading, setIsLoading] = useState(false);
   let loadInterval: number | undefined;
 
@@ -113,7 +114,7 @@ const App = () => {
         prompt: _prompt,
         model: modelValue
       });
-      if (modelValue === 'image') {
+      /*if (modelValue === 'image') {
         // Show image for `Create image` model
         updateResponse(uniqueId, {
           image: response.data,
@@ -123,7 +124,7 @@ const App = () => {
           response: response.data.trim(),
         });
       }
-
+      */
       setPromptToRetry(null);
       setUniqueIdToRetry(null);
     } catch (err) {
@@ -154,13 +155,10 @@ const App = () => {
         </div>
         )
       }
-      <div id="model-select-container">
+      <div id="model-select-container"> 
         <label htmlFor="model-select">Select model:</label>
         <select id="model-select" value={modelValue} onChange={(event) => setModelValue(event.target.value as ModelValueType)}>
-          <option value="gpt">GPT-3 (Understand and generate natural language )</option>
-          <option value="codex">Codex (Understand and generate code, including translating natural language to code)
-          </option>
-          <option value="image">Create Image (Create AI image using DALL·E models)</option>
+          <option value="Cloude 3 Sonnet">Cloude 3 Sonnet</option>
         </select>
       </div>
       <div id="input-container">
